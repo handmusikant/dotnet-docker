@@ -20,6 +20,11 @@ jobs:
   pool: ${{ parameters.pool }}
   strategy:
     matrix: $[ ${{ parameters.matrix }} ]
+  variables:
+    ${{ if eq(variables['isPullRequestBuild'], 'false') }}:
+      extraRunTestsParameters: -Registry $(acr.server) -RepoPrefix $(stagingRepoPrefix)
+    ${{ if eq(variables['isPullRequestBuild'], 'true') }}:
+      extraRunTestsParameters: -IsLocalRun
   steps:
   - template: ../steps/init-docker-windows.yml
     parameters:
@@ -32,8 +37,7 @@ jobs:
       ./tests/run-tests.ps1
       -VersionFilter $(dotnetVersion)*
       -OSFilter $(osVariant)
-      -Registry $(acr.server)
-      -RepoPrefix $(stagingRepoPrefix)
+      $(extraRunTestsParameters)
     displayName: Test Images
   - script: docker logout $(acr.server)
     displayName: Docker logout

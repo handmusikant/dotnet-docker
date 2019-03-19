@@ -27,6 +27,10 @@ jobs:
       optionalTestArgs: ''
     ${{ if eq(parameters.useRemoteDockerServer, 'true') }}:
       optionalTestArgs: -DisableHttpVerification
+    ${{ if eq(variables['isPullRequestBuild'], 'false') }}:
+      extraRunTestsParameters: -Registry $(acr.server) -RepoPrefix $(stagingRepoPrefix)
+    ${{ if eq(variables['isPullRequestBuild'], 'true') }}:
+      extraRunTestsParameters: -IsLocalRun
   steps:
   - template: ../steps/init-docker-linux.yml
     parameters:
@@ -41,25 +45,26 @@ jobs:
       --name $(testRunner.container)
       $(testrunner.image)
     displayName: Start Test Runner Container
-  - script: >
-      docker exec $(testRunner.container) pwsh
-      -File ./scripts/Invoke-WithRetry.ps1
-      "docker login -u $(acr.userName) -p $(BotAccount-dotnet-docker-acr-bot-password) $(acr.server)"
-    displayName: Docker login
+  - ${{ if eq(variables['isPullRequestBuild'], 'false') }}:
+    - script: >
+        docker exec $(testRunner.container) pwsh
+        -File ./scripts/Invoke-WithRetry.ps1
+        "docker login -u $(acr.userName) -p $(BotAccount-dotnet-docker-acr-bot-password) $(acr.server)"
+      displayName: Docker login
   - script: >
       docker exec $(testRunner.container) pwsh
       -File ./tests/run-tests.ps1
       -VersionFilter $(dotnetVersion)*
       -OSFilter $(osVariant)*
       -ArchitectureFilter $(architecture)
-      -Registry $(acr.server)
-      -RepoPrefix $(stagingRepoPrefix)
+      $(extraRunTestsParameters)
       $(optionalTestArgs)
     displayName: Test Images
-  - script: docker exec $(testRunner.container) docker logout $(acr.server)
-    displayName: Docker logout
-    condition: always()
-    continueOnError: true
+  - ${{ if eq(variables['isPullRequestBuild'], 'false') }}:
+    - script: docker exec $(testRunner.container) docker logout $(acr.server)
+      displayName: Docker logout
+      condition: always()
+      continueOnError: true
   - script: >
       docker cp
       $(testRunner.container):/repo/tests/Microsoft.DotNet.Docker.Tests/TestResults/

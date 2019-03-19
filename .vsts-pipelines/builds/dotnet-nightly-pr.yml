@@ -1,8 +1,9 @@
+pr: nightly
 trigger: none
-pr: none
+
 variables:
-- template: ../variables/common-official.yml
+- template: ../variables/common-pr.yml
 - name: manifest
-  value: manifest.samples.json
+  value: manifest.json
 jobs:
 - template: ../jobs/build-test-publish-repo.yml

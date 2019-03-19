@@ -13,6 +13,7 @@ jobs:
           or(
             succeeded(),
             and(
+              eq(variables['isPullRequestBuild'], 'false'),
               contains(variables['manifest'], 'samples'),
               eq(variables['singlePhase'], ''),
               succeeded('Build_Linux_amd64'),
