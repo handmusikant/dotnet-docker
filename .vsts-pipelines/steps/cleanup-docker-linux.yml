@@ -6,11 +6,6 @@ steps:
 ################################################################################
 # Cleanup local Docker server (basic)
 ################################################################################
-- script: docker system prune -f
-  displayName: Cleanup Docker (basic)
-  condition: always()
-  continueOnError: true
-
 - ${{ if eq(parameters.runOnlyBasicCleanup, 'false') }}:
   ################################################################################
   # Cleanup remote Docker server
