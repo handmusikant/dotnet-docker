@@ -42,6 +42,10 @@ jobs:
       $(registryPushParameters)
       $(imageBuilder.queueArgs)
     displayName: Build Images
+  - ${{ if eq(variables['isPullRequestBuild'], 'true') }}:
+    - template: ${{ format('../steps/test-images-{0}-client.yml', parameters.dockerClientOS) }}
+      parameters:
+        cleanupDocker: false
   - template: ${{ format('../steps/cleanup-docker-{0}.yml', parameters.dockerClientOS) }}
     parameters:
       cleanupRemoteDockerServer: ${{ parameters.useRemoteDockerServer }}
