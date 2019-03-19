@@ -4,8 +4,7 @@ jobs:
   ################################################################################
 - job: GenerateMatrices
   pool: # linuxAmd64Pool
-    name: DotNetCore-Docker
-    demands: agent.os -equals linux
+    name: Hosted Ubuntu 1604
   steps:
   - template: ../steps/init-docker-linux.yml
   - script: $(runImageBuilderCmd) generateBuildMatrix --manifest $(manifest) --type build --os-type '*' --architecture '*' $(imageBuilder.generateMatrixQueueArgs)
@@ -23,8 +22,7 @@ jobs:
   parameters:
     name: Build_Linux_amd64
     pool: # linuxAmd64Pool
-      name: DotNetCore-Docker
-      demands: agent.os -equals linux
+      name: Hosted Ubuntu 1604
     matrix: dependencies.GenerateMatrices.outputs['buildMatrix.buildMatrixLinuxAmd64']
     dockerClientOS: linux
 - template: build-images.yml
@@ -96,8 +94,7 @@ jobs:
     name: Test_Linux_amd64
     buildDependencies: Build_Linux_amd64
     pool: # linuxAmd64Pool
-      name: DotNetCore-Docker
-      demands: agent.os -equals linux
+      name: Hosted Ubuntu 1604
     matrix: dependencies.GenerateMatrices.outputs['testMatrix.testMatrixLinuxAmd64']
 - template: test-images-linux-client.yml
   parameters:
@@ -166,12 +163,10 @@ jobs:
 - template: copy-images.yml
   parameters:
     pool: # linuxAmd64Pool
-      name: DotNetCore-Docker
-      demands: agent.os -equals linux
+      name: Hosted Ubuntu 1604
     matrix: dependencies.GenerateMatrices.outputs['publishMatrix.publishMatrix']
 
 - template: publish-finalize.yml
   parameters:
     pool: # linuxAmd64Pool
-      name: DotNetCore-Docker
-      demands: agent.os -equals linux
+      name: Hosted Ubuntu 1604
